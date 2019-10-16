@@ -115,7 +115,7 @@ class Chip8 {
 
     /**
      * 1nnn: JP addr
-     * Jumps to location NNN.
+     * Jumps to location nnn.
      */
     void OP_1nnn() {
       uint16_t address = opcode & 0x0FFFu; //bitmask to get location
@@ -145,6 +145,144 @@ class Chip8 {
         pc += 2;
       }
     }
+
+    /**
+     * 4xkk: SNE Vx, byte
+     * Skips next instruction if Vx != kk.
+     */
+    void OP_4xkk() {
+      uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+      uint8_t byte = opcode & 0x00FFu;
+      if (registers[Vx] != byte) {
+        pc += 2;
+      }
+    }
+
+    /**
+     * 5xy0: SE Vx, Vy
+     * Skips next instruction if Vx = Vy.
+     */
+    void OP_5xy0() {
+      uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+      uint8_t Vy = (opcode & 0x00F0u) >> 4u;
+      if (registers[Vx] == registers[Vy]) {
+        pc += 2;
+      }
+    }
+
+    /**
+     * 6xnn: LD Vx, nn
+     * Loads 8-bit number nn into register Vx.
+     */
+    void OP_6xnn() {
+      uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+      uint8_t byte = opcode & 0x00FFu;
+      registers[Vx] = byte;
+    }
+
+    /**
+     * 7xnn: ADD Vx, nn
+     * Adds number nn to register Vx.
+     */
+    void OP_7xnn() {
+      uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+      uint8_t byte = opcode & 0x00FFu;
+      registers[Vx] += byte;
+    }
+
+    /**
+     * 8xy0: LD Vx, Vy
+     * Sets register Vx with the value of register Vy.
+     */
+    void OP_8xy0() {
+      uint8_t Vx = (opcode & 0x0F00) >> 8u;
+      uint8_t Vy = (opcode & 0x00F0) >> 4u;
+      registers[Vx] = registers[Vy];
+    }
+
+    /**
+     * 8xy1: OR Vx, Vy
+     * Logical OR values in registers Vx and Vy and stores
+     * result in Vx.
+     */
+    void OP_8xy1() {
+      uint8_t Vx = (opcode & 0x0F00) >> 8u;
+      uint8_t Vy = (opcode & 0x00F0) >> 4u;
+      registers[Vx] |= registers[Vy];
+    }
+
+    /**
+     * 8xy2: AND Vx, Vy
+     * Logical AND values in registers Vx and Vy and stores
+     * result in Vx.
+     */
+    void OP_8xy2() {
+      uint8_t Vx = (opcode & 0x0F00) >> 8u;
+      uint8_t Vy = (opcode & 0x00F0) >> 4u;
+      registers[Vx] &= registers[Vy];
+    } 
+
+    /**
+     * 8xy3: XOR Vx, Vy
+     * Logical XOR values in registers Vx and Vy and stores
+     * result in Vx.
+     */
+    void OP_8xy3() {
+      uint8_t Vx = (opcode & 0x0F00) >> 8u;
+      uint8_t Vy = (opcode & 0x00F0) >> 4u;
+      registers[Vx] ^= registers[Vy];
+    }
+
+    /**
+     * 8xy4: ADD Vx, Vy
+     * Adds values of registers Vx and Vy and stores them in Vx.
+     * If the result is more than 8 bits, register VF (16) is 
+     * set to 1, otherwise 0.
+     */
+    void OP_8xy4() {
+      uint8_t Vx = (opcode & 0x0F00) >> 8u;
+      uint8_t Vy = (opcode & 0x00F0) >> 4u;
+      uint16_t result = registers[Vx] + registers[Vy];
+      if (result > 255u){
+        registers[15] = 1;
+      } else {
+        registers[15] = 0;
+      }
+      registers[Vx] += registers[Vy];
+      //registers[Vx] = result & 0xFFu;
+    }
+
+    /**
+     * 8xy4: SUB Vx, Vy
+     * Subtracts value of registers Vy from Vx and stores the result in Vx.
+     * If value of Vx is more than Vy, register VF (16) is 
+     * set to 1, otherwise 0.
+     */
+    void OP_8xy5() {
+      uint8_t Vx = (opcode & 0x0F00) >> 8u;
+      uint8_t Vy = (opcode & 0x00F0) >> 4u;
+      if (registers[Vx] > registers[Vy]){
+        registers[15] = 1;
+      } else {
+        registers[15] = 0;
+      }
+      registers[Vx] -= registers[Vy];
+      //registers[Vx] = result & 0xFFu;
+    }
+
+    /**
+     * 8xy6: SHR Vx, Vy
+     * Store value of register Vy shifted right by one bit in register
+     * Vx. Set register VF to value of LSB of Vy before the shift.
+     */
+    void OP_8xy6() {
+      uint8_t Vx = (opcode & 0x0F00) >> 8u;
+      uint8_t Vy = (opcode & 0x00F0) >> 4u;
+      registers[15] = (registers[Vy] & 0x1u);
+      registers[Vx] = (registers[Vy]>>1);
+    } 
+
+
 
 
 };
