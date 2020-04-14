@@ -503,5 +503,47 @@ class Chip8 {
       index += FONTSET_START_ADDRESS + (5 * digit);
     }
 
+    /**
+     * Fx33: LD B, Vx
+     * Stores BCD representation of Vx in memory locations
+     * I, I+1 and I+2.
+     * The interpreter takes the decimal value of Vx, and places
+     * the hundreds digit at I, tens digit at I+1 and ones digit
+     * at I+2.
+     */
+    void OP_Fx33() {
+      uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+      uint8_t value = registers[Vx];
+      
+      memory[index+2] = value % 10;
+      value /= 10;
+      memory[index+1] = value % 10;
+      value /= 10;
+      memory[index] = value % 10;
+    }
 
+    /**
+     * Fx55: LD [I], Vx
+     * Stores registers V0 through Vx in memory starting at 
+     * location I.
+     */
+    void OP_Fx55() {
+      uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+      for (int reg = 0; reg <= Vx; reg++) {
+          uint8_t value = registers[reg];
+          memory[index + reg] = value;
+      }
+    }
+
+    /**
+     * Fx65: LD Vx, [I]
+     * Read registers V0 through Vx from memory starting at 
+     * location I.
+     */
+    void OP_Fx65() {
+      uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+      for (int reg = 0; reg <= Vx; reg++) {
+          registers[reg] = memory[index + reg];
+      }
+    }
 };
