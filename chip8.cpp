@@ -156,7 +156,27 @@ class Chip8 {
         delete[] buffer;
       }
     }
-    
+
+    //Main function
+    void Cycle() {
+      //Fetch: opcode is 64 bits long, so retrieve from 2 memory locations
+      opcode = (memory[pc] << 8u) | memory [pc + 1];  
+
+      //Increment pc
+      pc += 2;
+      
+      //Decode and execute
+      ((*this).*(table[(opcode & 0xF000u) >> 12u]))();
+
+      //Decrement sound and delay timer if set
+      if (delayTimer > 0) {
+        --delayTimer;
+      }
+      if (soundTimer > 0) {
+        --soundTimer;
+      }
+
+    }
     
     /**
      * 00E0: CLS
