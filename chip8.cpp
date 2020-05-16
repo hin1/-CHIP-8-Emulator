@@ -2,6 +2,7 @@
 #include <fstream>
 #include <chrono>
 #include <random>
+#include <SDL2/SDL.h>
 
 const unsigned int START_ADDRESS = 0x200;
 const unsigned int FONTSET_START_ADDRESS = 0x50;
@@ -28,6 +29,14 @@ uint8_t fontset[FONTSET_SIZE] =
   0xE0, 0x90, 0x90, 0x90, 0xE0, // D
   0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
   0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+};
+
+class Platform {
+  public:
+    Chip8(char const* title, int windowWidth, int windowHeight, int textureWidth, int textureHeight) {
+      SDL_Init(SDL_INIT_VIDEO);
+    }
+
 };
 
 class Chip8 {
@@ -67,6 +76,8 @@ class Chip8 {
       randByte = std::uniform_int_distribution<uint8_t>(0, 255U);
 
       //Function Pointer Table
+      void (Chip8::*table[16]) ();
+
       table[0x0] = &Chip8::Table0;
       table[0x1] = &Chip8::OP_1nnn;
       table[0x2] = &Chip8::OP_2nnn;
@@ -160,7 +171,7 @@ class Chip8 {
     //Main function
     void Cycle() {
       //Fetch: opcode is 64 bits long, so retrieve from 2 memory locations
-      opcode = (memory[pc] << 8u) | memory [pc + 1];  
+      opcode = (memory[pc] << 8u) | memory[pc + 1];  
 
       //Increment pc
       pc += 2;
